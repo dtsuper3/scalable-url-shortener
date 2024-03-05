@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  zookeeper-server:
+    image: bitnami/zookeeper:latest
+    hostname: zookeeper-server
+    restart: always    
+    ports:
+      - 2181:2181    
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+      
+  zookeeper-client:
+    image: elkozmon/zoonavigator    
+    ports:
+      - 9000:9000
+    environment:
+      HTTP_PORT: 9000
+      AUTO_CONNECT_CONNECTION_STRING: zookeeper-server:2181

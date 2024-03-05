@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import { UrlsService } from './urls.service';
 import { CreateUrlDto } from './dto/create-url.dto';
@@ -25,9 +26,13 @@ export class UrlsController {
     return this.urlsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.urlsService.findOne(+id);
+  @Get(':hash')
+  async findOne(@Param('hash') hash: string) {
+    const result = await this.urlsService.findOne(hash);
+    if (!result) {
+      throw new BadRequestException();
+    }
+    return result;
   }
 
   @Patch(':id')

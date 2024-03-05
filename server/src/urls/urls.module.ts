@@ -3,6 +3,7 @@ import { UrlsService } from './urls.service';
 import { UrlsController } from './urls.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Url, UrlSchema } from './entities/url.entity';
+import { ZookeeperModule } from 'src/shared/zookeeper/zookeeper.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { Url, UrlSchema } from './entities/url.entity';
         schema: UrlSchema,
       },
     ]),
+    ZookeeperModule,
   ],
   controllers: [UrlsController],
   providers: [UrlsService],

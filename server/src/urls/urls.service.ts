@@ -4,26 +4,42 @@ import { UpdateUrlDto } from './dto/update-url.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Url } from './entities/url.entity';
 import { Model } from 'mongoose';
+import { ZookeeperService } from 'src/shared/zookeeper/zookeeper.service';
 
 @Injectable()
 export class UrlsService {
-  constructor(@InjectModel(Url.name) private catModel: Model<Url>) {}
+  constructor(
+    @InjectModel(Url.name) private urlModel: Model<Url>,
+    private readonly zookeeperService: ZookeeperService,
+  ) {}
 
-  create(createUrlDto: CreateUrlDto) {
-    return this.catModel.create({
-      url: createUrlDto.url,
-      shortUrl: Math.random().toString(36).substring(2, 5),
+  async create(createUrlDto: CreateUrlDto) {
+    const range = this.zookeeperService.getRange();
+    console.log('range', range);
+    if (range.curr < range.end - 1 && range.curr != 0) {
+      range.curr++;
+    } else {
+      await this.zookeeperService.getTokenRange();
+      range.curr++;
+    }
+
+    return this.urlModel.create({
+      originalUrl: createUrlDto.url,
+      shortUrl: this.zookeeperService.hashGenerator(range.curr - 1),
     });
   }
 
   findAll() {
-    return this.catModel.find();
+    return this.urlModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} url`;
+  findOne(hash: string) {
+    return this.urlModel.findOne({
+      shortUrl: hash,
+    });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   update(id: number, updateUrlDto: UpdateUrlDto) {
     return `This action updates a #${id} url`;
   }
